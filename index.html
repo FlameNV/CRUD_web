@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My dealership</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <header>
+        <h1>Dealership</h1>
+        <nav>
+            <ul class="navigation-list">
+                <li><a href="">Cars</a></li>
+                <li><a href="#">Add cars</a></li>
+            </ul>
+        </nav>
+
+        <div class="search-car">
+            <input type="text" id="find-car" name="find-car" class="find-car" placeholder="Enter car name. . .">
+            <button class="clear-search-bar" id="clear-search-bar">Clear</button>
+        </div>
+    </header>
+
+    <section class="cars-section">
+
+        <div class="cars-manager">
+            <div class="sort-manager">
+                <label for="sort-select">Sort By</label>
+                <select name="sort-select" id="sort-select" onchange="showSortedCars()">
+                    <option value="none">select</option>
+                    <option value="name">name</option>
+                    <option value="power">power</option>
+                    <option value="price">price</option>
+                </select>
+            </div>
+            <div class="calculate-price">
+                <button id="calculate-price__button" onclick="calculatePrice()">Calculate</button>
+                <label id="total-price">Total price: </label>
+            </div>
+
+        </div>
+        <ul id="cars-list" class="cars-list"></ul>
+    </section>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

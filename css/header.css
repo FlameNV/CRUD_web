@@ -1,0 +1,50 @@
+header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333333;
+}
+
+header h1 {
+    padding-left: 20px;
+    color: white;
+}
+
+.navigation-list {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+}
+
+.navigation-list li:nth-child(2) {
+    padding-left: 30px;
+}
+
+.navigation-list li:hover {
+    color: lightblue;
+}
+
+.search-car {
+    display: flex;
+    flex-direction: row;
+}
+
+.find-car {
+    width: 200px;
+}
+
+.clear-search-bar {
+    margin-right: 20px;
+    margin-left: 20px;
+    width: 70px;
+    height: 30px;
+    background-color: lightgreen;
+}
+
+.clear-search-bar:hover {
+    background-color: green;
+}
