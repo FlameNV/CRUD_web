@@ -2,9 +2,3 @@ body {
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
 }
-
-button {
-    background: none;
-    border: 1px solid;
-    border-radius: 10px;
-}

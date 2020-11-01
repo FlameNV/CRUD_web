@@ -1,4 +1,4 @@
-header {
+.header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -33,18 +33,7 @@ header h1 {
     flex-direction: row;
 }
 
-.find-car {
-    width: 200px;
-}
-
-.clear-search-bar {
+.btn-success {
     margin-right: 20px;
     margin-left: 20px;
-    width: 70px;
-    height: 30px;
-    background-color: lightgreen;
-}
-
-.clear-search-bar:hover {
-    background-color: green;
 }
