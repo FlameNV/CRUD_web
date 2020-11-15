@@ -7,52 +7,22 @@ const createCarName = document.getElementById('create_name');
 const createCarPower = document.getElementById('create_powerInHP');
 const createCarPrice = document.getElementById('create_priceInUSD');
 
-var editActive = false;
+let editActive = false;
 
-let cars = [{
-        "id": 1,
-        "name": "Audi RS6 Avant",
-        "powerInHP": 600,
-        "priceInUSD": 80000
-    },
-    {
-        "id": 2,
-        "name": "Tesla Model S",
-        "powerInHP": 750,
-        "priceInUSD": 45000
-    },
-    {
-        "id": 3,
-        "name": "BMW M3",
-        "powerInHP": 430,
-        "priceInUSD": 40000
-    },
-    {
-        "id": 4,
-        "name": "LADA 2101",
-        "powerInHP": 80,
-        "priceInUSD": 1000
-    },
-    {
-        "id": 5,
-        "name": "VW Passat B7",
-        "powerInHP": 150,
-        "priceInUSD": 12000
-    },
-    {
-        "id": 6,
-        "name": "VW Golf VI",
-        "powerInHP": 120,
-        "priceInUSD": 9000
-    },
-    {
-        "id": 7,
-        "name": "Toyota Corola",
-        "powerInHP": 160,
-        "priceInUSD": 13000
-    }
-]
-let currentCars = cars;
+const cars_url = 'http://localhost:5000/car';
+
+let cars = [];
+
+function fetchData(url) {
+    fetch(url).then(response => response.json()).then(data => {
+        for (i = 0; i < data.length; i++) {
+            cars.push(data[i]);
+        }
+        displayCars(cars);
+    });
+}
+
+let currentCars = cars
 
 // SEARCH
 searchBar.addEventListener('keyup', filterCars)
@@ -116,10 +86,7 @@ function compareByPrice(firstCar, secondCar) {
     return firstCar.priceInUSD - secondCar.priceInUSD;
 }
 
-function deleteRecord(element) {
-    console.log(element);
-}
-
+//DISPLAY
 const displayCars = (carsToShow) => {
     const htmlString = carsToShow.map((car) => {
         return `
@@ -146,21 +113,22 @@ const displayCars = (carsToShow) => {
     carList.innerHTML = htmlString;
 }
 
+//DELETE
 function deleteRecord(record) {
     const list_to_delete = record.parentNode.parentNode;
     let carId = parseInt(list_to_delete.childNodes[1].childNodes[1].innerHTML);
     let indexToDeleteFromAll = cars.findIndex(obj => obj.id == carId);
     cars.splice(indexToDeleteFromAll, 1);
-    if (searchBar.value != '') {
-        let indexToDeleteFromCurrent = currentCars.findIndex(obj => obj.id == carId);
-        console.log(indexToDeleteFromCurrent);
+    let indexToDeleteFromCurrent = currentCars.findIndex(obj => obj.id == carId);
+    if (indexToDeleteFromCurrent != -1) {
         currentCars.splice(indexToDeleteFromCurrent, 1);
     }
+    deleteCar(carId);
     showSortedCars();
-    console.log(cars, currentCars);
     return list_to_delete;
 }
 
+//EDIT
 function editRecord(record) {
     const nodeList = record.parentNode.parentNode.childNodes;
     const editBar = nodeList[3];
@@ -175,70 +143,121 @@ function editRecord(record) {
 
     let indexToEdit = cars.findIndex(obj => obj.id == carId);
     if (editActive == false) {
-        editBar.classList.add('open');
-        editBar.classList.remove('hide');
-        infoBar.classList.add('hide');
-        infoBar.classList.remove('open');
-        editActive = true
+        openEditBar(editBar, infoBar);
+        editActive = true;
     } else if (editActive == true) {
-        editBar.classList.add('hide');
-        editBar.classList.remove('open');
-        infoBar.classList.add('open');
-        infoBar.classList.remove('hide');
+        closeEditBar(editBar, infoBar);
 
         if (validatePowerAndPrice(editedCarPower.value, editedCarPrice.value) == false) {
             editedCarPower.value = '';
             editedCarPrice.value = '';
+            editActive = false;
             return;
+        }
+
+        let finalName = carName;
+        let finalPower = carPower;
+        let finalPrice = carPrice;
+        if (editedCarName.value == "" && editedCarPower.value == "" && editedCarPrice.value == "") {
+            editActive = false;
+            showSortedCars();
+            return
         }
 
         if (editedCarName.value != "") {
             cars[indexToEdit]["name"] = editedCarName.value;
+            finalName = editedCarName.value;
         } else {
             cars[indexToEdit]["name"] = carName;
         }
         if (editedCarPower.value != "") {
             cars[indexToEdit]["powerInHP"] = parseFloat(editedCarPower.value);
+            finalPower = parseFloat(editedCarPower.value);
         } else {
             cars[indexToEdit]["powerInHP"] = carPower;
         }
         if (editedCarPrice.value != "") {
-            cars[indexToEdit]["priceInUSD"] = parseFloat(editedCarsPrice.value)
+            cars[indexToEdit]["priceInUSD"] = parseFloat(editedCarsPrice.value);
+            finalPrice = parseFloat(editedCarPrice.value);
         } else {
             cars[indexToEdit]["priceInUSD"] = carPrice
         }
 
+        if (searchBar.value != '' && editedCarName.value != '' && editedCarName.value.includes(searchBar.value) == false) {
+            let indexToDeleteFromCurrent = currentCars.findIndex(obj => obj.id == carId);
+            currentCars.splice(indexToDeleteFromCurrent, 1);
+        }
+
+        const jsonCar = createJSON(finalName, finalPower, finalPrice)
+        editCar(carId, jsonCar)
         editActive = false;
         showSortedCars();
     }
 }
 
-function createCar() {
-    if (validateFormRequirements(createCarID.value, createCarName.value, createCarPower.value, createCarPrice.value) == false) {
-        console.log('error');
+function openEditBar(editBar, infoBar) {
+    editBar.classList.add('open');
+    editBar.classList.remove('hide');
+    infoBar.classList.add('hide');
+    infoBar.classList.remove('open');
+}
+
+function closeEditBar(editBar, infoBar) {
+    editBar.classList.add('hide');
+    editBar.classList.remove('open');
+    infoBar.classList.add('open');
+    infoBar.classList.remove('hide');
+}
+
+//CREATE
+async function createCar() {
+    if (validateFormRequirements(createCarName.value, createCarPower.value, createCarPrice.value) == false) {
         return;
     }
     if (validatePowerAndPrice(createCarPower.value, createCarPrice.value) == false) {
-        console.log('error');
         return;
     }
-    let json = createJSON(createCarID.value, createCarName.value, createCarPower.value, createCarPrice.value);
 
-    cars.push(json)
-
+    const jsonCar = createJSON(createCarName.value, createCarPower.value, createCarPrice.value);
+    await postCar(jsonCar);
     showSortedCars();
-    return json;
+    return jsonCar;
+}
+async function postCar(newCar) {
+    let response = await fetch(cars_url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify(newCar)
+    }).then(response => response.json()).then(data => cars.push(data))
+    return response;
 }
 
-function createJSON(id, name, power, price) {
+
+async function deleteCar(id) {
+    let response = await fetch(cars_url + '/' + id, {
+        method: 'DELETE',
+    })
+    return response;
+}
+async function editCar(id, editedCar) {
+    fetch(cars_url + '/' + id, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify(editedCar)
+    })
+}
+
+function createJSON(name, power, price) {
     let createdCar = {
-        "id": parseInt(id),
         "name": name,
         "powerInHP": parseFloat(power),
         "priceInUSD": parseFloat(price)
     }
     return createdCar;
-
 }
 
 function validatePowerAndPrice(power, price) {
@@ -253,11 +272,7 @@ function validatePowerAndPrice(power, price) {
     return true;
 }
 
-function validateFormRequirements(id, name, power, price) {
-    if (id == '') {
-        alert('id field is requiered')
-        return false;
-    }
+function validateFormRequirements(name, power, price) {
     if (name == '') {
         alert('name field is requiered')
         return false;
@@ -273,4 +288,4 @@ function validateFormRequirements(id, name, power, price) {
     return true;
 }
 
-displayCars(currentCars)
+fetchData(cars_url);
